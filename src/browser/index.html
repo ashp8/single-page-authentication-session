@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <script>
+        let state = 0;
+    </script>
+    <style>
+        :root{
+            --nav-size: 60px;
+        }
+        body,html{
+            margin: 0;padding: 0;
+        }
+        .nav{
+            height: var(--nav-size);
+        }
+        .links{
+            font-size: 24px;
+            width: 100px;
+            margin-top: 5px;
+            height: calc(var(--nav-size) - 10px);
+            border: 2px solid orange;
+        }
+        .body{
+            height: 90vh;
+        }
+        .hidden{
+            display: none;
+        }
+    </style>
+</head>
+<body style="height: 100%;">
+    <div class="row z-depth-1 nav orange lighten-2">
+        <div class="col waves-effect waves-light valign-wrapper white-text center-align z-depth-2 links offset-s8 s1" id="lginbtn">L</div>
+        <div class="col waves-effect waves-light valign-wrapper white-text center-align z-depth-2 links s1" id="sinbtn">R</div>
+        <div class="col waves-effect waves-light valign-wrapper white-text center-align z-depth-2 links offset-s10 hidden s1" id="lobtn">O</div>
+        <div class="col card-panel hidden s1" id="profile" style="font-size: 15px; height: 50px;"></div>
+    </div>
+    <div class="row grey body lighten-2">
+        <div id="mainpart" class="col teal body s9"></div>
+        <div id="authpart" class="col orange body s3">
+            <div class="card-panel" id="login">
+                <div class="container center-align" style="font-size: 32px;">Login</div>
+                <input placeholder="Email" id="lemail" type="text" type="text">
+                <input placeholder="Password" id="lpassword" type="password" type="password">
+                <button id="lginbtn2" class="waves-effect waves-light btn">Login</button>
+            </div>
+            <div class="card-panel" id="register">
+                <div class="container center-align" style="font-size: 32px;">SignUp</div>
+                <input placeholder="Email" type="text" id="email" type="text">
+                <input placeholder="Username" type="text" id="username" type="text">
+                <input placeholder="Full Name" type="text" id="fullname" type="text">
+                <input placeholder="Password" type="password" id="password" type="password">
+                <button id="regbtn" class="waves-effect waves-light btn">Register</button>
+            </div>
+        </div>
+    </div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+<script>
+    const login = document.querySelector('#login');
+    const register = document.querySelector('#register');
+     const lginbtn = document.querySelector('#lginbtn');
+    const sinbtn = document.querySelector('#sinbtn');
+    const authpart = document.querySelector('#authpart');
+    const mainpart = document.querySelector('#mainpart');
+    const lobtn = document.querySelector('#lobtn');
+    const profile = document.querySelector('#profile');
+    if(state == 0){
+        login.classList.remove('hidden');
+        register.classList.add('hidden');
+        
+    }
+    if(window.localStorage.loggedIn){
+        const profiledta = JSON.parse(window.localStorage.resp);
+        login.classList.add('hidden');
+        register.classList.add('hidden');
+        lginbtn.classList.add('hidden');
+        sinbtn.classList.add('hidden');
+        authpart.classList.remove('s3');
+        authpart.classList.add('hidden');
+        mainpart.classList.remove('s9');
+        mainpart.classList.add('s12');
+        lobtn.classList.remove('hidden');
+        profile.classList.remove('hidden');
+        profile.innerText = `${profiledta.fullName}`;
+    }
+   
+    lginbtn.addEventListener('click', ()=>{
+        login.classList.remove('hidden');
+        register.classList.add('hidden');
+    });
+    sinbtn.addEventListener('click', ()=>{
+        login.classList.add('hidden');
+        register.classList.remove('hidden');
+    });
+
+    document.querySelector('#regbtn').addEventListener('click', async ()=>{
+        const email = document.querySelector('#email').value;
+        const username = document.querySelector('#username').value;
+        const fullName = document.querySelector('#fullname').value;
+        const password = document.querySelector('#password').value;
+        const resp = await fetch('http://localhost:4000/register',
+            {
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify({username, email, fullName, password})
+            });
+        const reader = await resp.body.getReader();const stream = await reader.read();
+        const rresp = JSON.parse(new TextDecoder().decode(stream.value));
+        if(rresp.red){
+            alert("user added");
+            login.classList.remove('hidden');
+            register.classList.add('hidden');
+        }
+
+
+    });
+    document.querySelector('#lginbtn2').addEventListener('click', async ()=>{
+        console.log("posted");
+        const lemail = document.querySelector('#lemail').value;
+        const lpassword = document.querySelector('#lpassword').value;
+        const resp = await fetch('http://localhost:4000/login', {
+            method: "POST",
+            headers:{
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({email:lemail, password: lpassword})
+        });
+
+        console.log(resp);
+        const reader = await resp.body.getReader(); const stream =await reader.read();
+        const rresp = JSON.parse(new TextDecoder().decode(stream.value));
+        console.log(rresp);
+        if(rresp.loggedIn){
+            alert("logged in");
+            localStorage.setItem('loggedIn', rresp.loggedIn);
+            localStorage.setItem("resp", JSON.stringify(rresp));
+            window.location.href = '/';
+        }
+    });
+    lobtn.addEventListener('click', async ()=>{
+        window.localStorage.clear();
+        fetch('http://localhost:4000/logout', {
+            method: "POST",
+        
+        }).then(resp=>resp.body)
+        .then(res=> res.getReader())
+        .then(stream=>stream.read())
+        .then(data=>{
+            const d = JSON.parse(new TextDecoder().decode(data.value));
+            if(!d.loggedIn){
+                window.location.href = '/';
+            }
+        });
+        
+
+    })
+</script>
+</html>

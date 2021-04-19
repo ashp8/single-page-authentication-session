@@ -1,0 +1,22 @@
+{
+  "name": "chat1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "watch": "babel-watch -L ./src/app.js"
+  },
+  "dependencies": {
+    "@babel/core": "^7.13.15",
+    "@babel/polyfill": "^7.12.1",
+    "@babel/preset-env": "^7.13.15",
+    "babel-plugin-module-resolver": "^4.1.",
+    "connect-mongodb-session": "^2.4.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "mongoose": "^5.12.3"
+  },
+  "devDependencies": {
+    "babel-watch": "^7.4.1"
+  }
+}

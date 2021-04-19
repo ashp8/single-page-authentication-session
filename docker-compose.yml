@@ -1,0 +1,20 @@
+version: "3.7"
+services: 
+  app:
+    build: './'
+    ports: 
+      - "4000:4000"
+    environment: 
+      - DB_URI=mongodb://db/test
+      - PORT=4000
+      - SECRET=myawesomesecret
+    depends_on: 
+      - db
+    volumes: 
+      - './:/opt/app/'
+  db:
+    image: mongo
+    ports: 
+      - '27017:27017'
+    volumes: 
+      - ./data:/data/db
